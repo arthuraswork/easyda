@@ -35,6 +35,8 @@ class Page:
             self.data.df = None
         if 'plot_type' not in self.page_statement:
             self.page_statement.plot_type = 'hist'
+        if 'multyselect' not in self.page_statement:
+            self.page_statement.multyselect = []
 
     def __init_page_statement(self):
         self.conf_placeholder = st.empty()
@@ -58,6 +60,8 @@ class Page:
         except Exception as e:
             st.error(f'Error: {e}')
     def dataframe_work(self):
+        print(self.page_statement.multyselect)
+        st.text(f"multyselected columns: {' * '.join(self.page_statement.multyselect)}")
 
         column_option = st.radio(
             "Select columns",
@@ -106,20 +110,32 @@ class Page:
                 self.data.df = self.data.data
                 st.rerun()
 
+            if st.button("Multyselect"):
+                if column_option not in self.page_statement.multyselect:
+                    self.page_statement.multyselect.append(column_option)
+                self.page_statement.multyselect.pop(self.page_statement.multyselect.index(column_option))
+                st.rerun()
+                
+                
+
 
         st.write(self.data.results)
 
     def visualisation(self):
         if self.page_statement.selected_column and self.page_statement.plot_created:
             with self.plot_placeholder:
+
+                if self.page_statement.plot_type == "corr":
+                    st.write(corr(self.data.df))
+
                 if self.data.selected_dt != "object":
                     if self.page_statement.plot_type == "hist":
                         st.bar_chart(self.data.df[self.page_statement.selected_column])
                     elif self.page_statement.plot_type == "area":
                         st.area_chart(self.data.df[self.page_statement.selected_column])
-                elif self.page_statement.plot_type == "corr":
-                    st.write(corr(self.data.df))
-
+                    elif self.page_statement.plot_type == "plot":
+                        st.line_chart(self.data.df[self.page_statement.selected_column])      
+    
                 else:
                     value_counts = self.data.df[self.page_statement.selected_column].value_counts().head(10)
                     st.bar_chart(value_counts)
@@ -138,6 +154,7 @@ class Page:
             option_map = {
                 'hist': ":material/grouped_bar_chart:",
                 'area': ":material/show_chart:",
+                'plot': ":material/line_axis:",
                 'corr': ":material/border_all:"
             }
             self.page_statement.plot_type = st.pills(
@@ -151,14 +168,13 @@ class Page:
 
 
     def upload_dataset(self):
-        df = st.file_uploader(
+        with self.dataset_placeholder.container():
+            df = st.file_uploader(
             label="Load dataset",
             type="csv",
             help=f"max size: {MAX_FILE_SIZE}",
             key="dataset_uploader"
         )
-
-        with self.dataset_placeholder.container():
             if df is not None:
                 if df.size > MAX_FILE_SIZE:
                     st.error("File too big")
@@ -170,6 +186,7 @@ class Page:
                         self.data.data = data
                         self.page_statement.is_loaded = 1
                         self.dataset_placeholder.empty()
+                        st.rerun()
 
                     else:
                         st.error("Dataset is empty or not exist")
