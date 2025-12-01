@@ -4,22 +4,29 @@ def read_df(filename):
     df = pd.read_csv(filename)
     return df
 
-def groupby(df, func, targer_column, other_columns):
+def groupby(df, func, targer_column, other_columns, sort_type, sort_by):
+    ascending = True
+
+    if sort_type == ':.': 
+        ascending = False         
+
+    print(sort_by)
+
     columns = other_columns
     if len(other_columns) == 1:
         columns = other_columns[0]
-    print(func)
+
     match func:
         case "values":
-            return df.groupby(targer_column)[columns].value_counts()
-        case "mean":
-            return df.groupby(targer_column)[columns].mean()
+            return df.groupby(targer_column)[columns].value_counts() if sort_type == ":.:" else df.groupby(targer_column)[columns].value_counts().sort_values(ascending=ascending, by=sort_by)
+        case "groupby::mean":
+            return df.groupby(targer_column)[columns].mean() if sort_type == ":.:" else df.groupby(targer_column)[columns].mean().sort_values(ascending=ascending, by=sort_by)
         case "values-normalize":
-            return df.groupby(targer_column)[columns].value_counts(normalize=True)
-        case "std":
-            return df.groupby(targer_column)[columns].std()
-        case "var":
-            return df.groupby(targer_column)[columns].var()
+            return df.groupby(targer_column)[columns].value_counts(normalize=True) if sort_type == ":.:" else df.groupby(targer_column)[columns].value_counts(normalize=True).sort_values(ascending=ascending, by=sort_by)
+        case "groupby::std":
+            return df.groupby(targer_column)[columns].std() if sort_type == ":.:" else df.groupby(targer_column)[columns].std().sort_values(ascending=ascending, by=sort_by)
+        case "groupby::var":
+            return df.groupby(targer_column)[columns].var() if sort_type == ":.:" else df.groupby(targer_column)[columns].var().sort_values(ascending=ascending, by=sort_by)
         case _:
             return "Select another agg function"
         
@@ -80,4 +87,4 @@ def metrica(name, df, column, mode_count):
         return "use only int/float columns"
 
     except Exception as e:
-        return  f"Most likely datatype error: {e}"
+        return  f"Most likely datatype error:"

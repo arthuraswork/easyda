@@ -7,8 +7,8 @@ class Page:
         self.title = "home"
         self.page_statement = st.session_state
         self.data = st.session_state
-        self.__init_statics()
         self.__init_data()
+        self.__init_statics()
         self.__init_page_statement()
     def __init_statics(self):
         self.show_logo()
@@ -39,6 +39,10 @@ class Page:
             self.page_statement.multyselect = []
         if 'func' not in self.page_statement:
             self.page_statement.func = None
+        if 'sort_type' not in self.page_statement:
+            self.page_statement.sort_type = ":.:"
+        if 'sort_by' not in self.page_statement:
+            self.page_statement.sort_by = None
 
     def __init_page_statement(self):
         self.conf_placeholder = st.empty()
@@ -65,7 +69,15 @@ class Page:
 
     def grouping(self):
         try:
-            result = groupby(self.data.df, self.page_statement.func, self.page_statement.selected_column, self.page_statement.multyselect)
+            print(self.page_statement.sort_by)
+            result = groupby(
+                self.data.df,
+                self.page_statement.func,
+                self.page_statement.selected_column,
+                self.page_statement.multyselect,
+                self.page_statement.sort_type,
+                self.page_statement.sort_by
+                )
             self.data.results = result
         except Exception as e:
             st.error(e)
@@ -83,7 +95,7 @@ class Page:
         self.data.selected_dt = str(self.data.df[column_option].dtype)
         self.data.selected_column = column_option
         if self.data.selected_dt == "object":
-            option = st.radio(
+            self.page_statement.func = st.radio(
                 "Select option",
                 OPTIONS,
                 horizontal=True,
@@ -123,6 +135,7 @@ class Page:
 
             if st.button("Reset"):
                 self.data.df = self.data.data
+                self.page_statement.multyselect = []
                 st.rerun()
                 
             if st.button("Delete from columns stack" if column_option in self.page_statement.multyselect else "Add to columns stack"):
@@ -175,6 +188,7 @@ class Page:
 
     def show_df(self):
         with self.dataset_placeholder:
+            st.write(self.data.df.shape)
             st.write(self.data.df)
 
     def show_setting(self):
@@ -192,6 +206,27 @@ class Page:
                 format_func=lambda option: option_map[option],
                 selection_mode="single",
             )
+            self.page_statement.sort_type = st.select_slider(
+                "Select sorting type",
+                options=(
+                    (
+                        ".:", ":.:", ":."
+                    )
+                )
+            )
+
+            print(self.page_statement.multyselect )
+
+            sorting_columns =  self.page_statement.multyselect if len(self.page_statement.multyselect) > 2 else ["Please", "select", "columns"] if len(self.page_statement.multyselect) == 0 else ["Please", "select", "one", "column", "more"]
+
+            self.page_statement.sort_by = st.select_slider(
+                    "Select sorting by",
+                    options=(
+                        (
+                            sorting_columns
+                        )
+                    )
+                )
 
 
 

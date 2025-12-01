@@ -5,5 +5,5 @@ NUM_OPTIONS = (
                 "skew", "kurt", "var", "sum", "sort.:", "sort:."
 
              )
-OPTIONS =  ("isna", "values", "unique", "duplicated", "values-normalize")
+OPTIONS =  ("isna", "values", "unique", "duplicated", "values-normalize", "groupby::mean","groupby::std", "groupby::var")
 
