@@ -1,6 +1,6 @@
 import streamlit as st
-from consts import *
-from dataframe_analize import *
+from .consts import *
+from .dataframe_analize import *
 class Page:
 
     def __init__(self):

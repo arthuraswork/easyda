@@ -6,7 +6,14 @@
 
 ```bash
 git clone https://github.com/arthuraswork/easyda
+
 cd easyda
+
+python3 -m venv venv
+. venv/bin/activate
+
+make install
+
 make run
 ```
 

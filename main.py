@@ -1,4 +1,4 @@
-from user_ui import Page
+from src.user_ui import Page
 
 page = Page()
 page.page()

@@ -1,4 +1,5 @@
-run:
+install:
 	poetry install
-	poetry build
+
+run:
 	streamlit run main.py
