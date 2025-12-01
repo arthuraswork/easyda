@@ -1,4 +1,5 @@
 import pandas as pd
+import numpy as np
 def read_df(filename):
     df = pd.read_csv(filename)
     return df
@@ -6,6 +7,13 @@ def read_df(filename):
 def request(df, query):
     result = df.query(query)
     return result
+
+def corr(df, columns=None):
+    if not columns:
+        columns = df.select_dtypes(include=[np.number])
+        return columns.corr()
+    return df[columns].corr()
+
 
 def metrica(name, df, column, mode_count):
     try:

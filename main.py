@@ -1,4 +1,6 @@
 from src.user_ui import Page
 
-page = Page()
-page.page()
+
+if __name__ == "__main__":
+    page = Page()
+    page.page()

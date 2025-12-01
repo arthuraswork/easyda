@@ -117,7 +117,8 @@ class Page:
                         st.bar_chart(self.data.df[self.page_statement.selected_column])
                     elif self.page_statement.plot_type == "area":
                         st.area_chart(self.data.df[self.page_statement.selected_column])
-
+                elif self.page_statement.plot_type == "corr":
+                    st.write(corr(self.data.df))
 
                 else:
                     value_counts = self.data.df[self.page_statement.selected_column].value_counts().head(10)
@@ -137,6 +138,7 @@ class Page:
             option_map = {
                 'hist': ":material/grouped_bar_chart:",
                 'area': ":material/show_chart:",
+                'corr': ":material/border_all:"
             }
             self.page_statement.plot_type = st.pills(
                 "Plot type",
@@ -144,6 +146,7 @@ class Page:
                 format_func=lambda option: option_map[option],
                 selection_mode="single",
             )
+
 
 
 
