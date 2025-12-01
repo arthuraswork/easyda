@@ -33,6 +33,8 @@ class Page:
             self.data.data = None
         if 'df' not in self.data:
             self.data.df = None
+        if 'plot_type' not in self.page_statement:
+            self.page_statement.plot_type = 'hist'
 
     def __init_page_statement(self):
         self.conf_placeholder = st.empty()
@@ -83,10 +85,10 @@ class Page:
             if column_option:
                 if st.button("Plot"):
                     if self.page_statement.plot_created:
-                        self.page_statement.plot_created -= 1
+                        self.page_statement.plot_created = 0
 
                     else:
-                        self.page_statement.plot_created += 1
+                        self.page_statement.plot_created = 1
 
             if option and column_option:
                 if st.button("Calculate"):
@@ -111,7 +113,12 @@ class Page:
         if self.page_statement.selected_column and self.page_statement.plot_created:
             with self.plot_placeholder:
                 if self.data.selected_dt != "object":
-                    st.bar_chart(self.data.df[self.page_statement.selected_column])
+                    if self.page_statement.plot_type == "hist":
+                        st.bar_chart(self.data.df[self.page_statement.selected_column])
+                    elif self.page_statement.plot_type == "area":
+                        st.area_chart(self.data.df[self.page_statement.selected_column])
+
+
                 else:
                     value_counts = self.data.df[self.page_statement.selected_column].value_counts().head(10)
                     st.bar_chart(value_counts)
@@ -126,7 +133,19 @@ class Page:
 
     def show_setting(self):
         with st.expander("Settings"):
-            self.page_statement.mode_count = st.slider('Select mode count', min_value=1, max_value=10, step=1)
+            self.page_statement.mode_count = st.slider('Mode count', min_value=1, max_value=10, step=1)
+            option_map = {
+                'hist': ":material/grouped_bar_chart:",
+                'area': ":material/show_chart:",
+            }
+            self.page_statement.plot_type = st.pills(
+                "Plot type",
+                options=option_map.keys(),
+                format_func=lambda option: option_map[option],
+                selection_mode="single",
+            )
+
+
 
     def upload_dataset(self):
         df = st.file_uploader(
