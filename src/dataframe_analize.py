@@ -4,6 +4,26 @@ def read_df(filename):
     df = pd.read_csv(filename)
     return df
 
+def groupby(df, func, targer_column, other_columns):
+    columns = other_columns
+    if len(other_columns) == 1:
+        columns = other_columns[0]
+    print(func)
+    match func:
+        case "values":
+            return df.groupby(targer_column)[columns].value_counts()
+        case "mean":
+            return df.groupby(targer_column)[columns].mean()
+        case "values-normalize":
+            return df.groupby(targer_column)[columns].value_counts(normalize=True)
+        case "std":
+            return df.groupby(targer_column)[columns].std()
+        case "var":
+            return df.groupby(targer_column)[columns].var()
+        case _:
+            return "Select another agg function"
+        
+        
 def request(df, query):
     result = df.query(query)
     return result

@@ -37,6 +37,8 @@ class Page:
             self.page_statement.plot_type = 'hist'
         if 'multyselect' not in self.page_statement:
             self.page_statement.multyselect = []
+        if 'func' not in self.page_statement:
+            self.page_statement.func = None
 
     def __init_page_statement(self):
         self.conf_placeholder = st.empty()
@@ -48,6 +50,7 @@ class Page:
     def __init_footer():
         with st.container():
             st.markdown("Created by :red[**Arthurius**] — 😺 [GitHub](https://github.com/arthuraswork)")
+    
     def get_user_data(self, userdata: dict):
         if 'userdata' not in self.data:
             self.data.userdata = userdata
@@ -59,10 +62,19 @@ class Page:
             self.data.df = result
         except Exception as e:
             st.error(f'Error: {e}')
-    def dataframe_work(self):
-        print(self.page_statement.multyselect)
-        st.text(f"multyselected columns: {' * '.join(self.page_statement.multyselect)}")
 
+    def grouping(self):
+        try:
+            result = groupby(self.data.df, self.page_statement.option, self.page_statement.selected_column, self.page_statement.multyselect)
+            self.data.results = result
+        except Exception as e:
+            st.error(e)
+
+    def dataframe_work(self):
+        st.json({
+             'Selected columns':
+            self.page_statement.multyselect
+            })
         column_option = st.radio(
             "Select columns",
             self.data.columns, horizontal=True
@@ -77,7 +89,7 @@ class Page:
                 horizontal=True,
             )
         else:
-            option = st.radio(
+            self.page_statement.option = st.radio(
                 "Select option",
                 OPTIONS + NUM_OPTIONS,
                 horizontal=True,
@@ -94,11 +106,14 @@ class Page:
                     else:
                         self.page_statement.plot_created = 1
 
-            if option and column_option:
+            if self.page_statement.option and column_option:
                 if st.button("Calculate"):
                     results = metrica(
-                        option, self.data.df, self.page_statement.selected_column, self.page_statement.mode_count
-                                      )
+                        self.page_statement.option,
+                        self.data.df,
+                        self.page_statement.selected_column,
+                        self.page_statement.mode_count
+                              )
                     self.data.results = results
 
             if st.button("Request"):
@@ -110,13 +125,14 @@ class Page:
                 self.data.df = self.data.data
                 st.rerun()
 
-            if st.button("Multyselect"):
+            if st.button("Add to columns stack"):
                 if column_option not in self.page_statement.multyselect:
                     self.page_statement.multyselect.append(column_option)
-                self.page_statement.multyselect.pop(self.page_statement.multyselect.index(column_option))
+                else:
+                    self.page_statement.multyselect.pop(self.page_statement.multyselect.index(column_option))
                 st.rerun()
-                
-                
+            if st.button("Group by"):
+                self.grouping()             
 
 
         st.write(self.data.results)
@@ -124,12 +140,19 @@ class Page:
     def visualisation(self):
         if self.page_statement.selected_column and self.page_statement.plot_created:
             with self.plot_placeholder:
-
-                if self.page_statement.plot_type == "corr":
+                
+                if self.page_statement.plot_type == "corr" and self.page_statement.multyselect:
+                    st.write(corr(self.data.df[self.page_statement.multyselect]))
+                elif self.page_statement.plot_type == "corr":
                     st.write(corr(self.data.df))
 
                 if self.data.selected_dt != "object":
-                    if self.page_statement.plot_type == "hist":
+
+                    if self.page_statement.plot_type == "plot" and self.page_statement.multyselect:
+                        st.line_chart(self.data.df[self.page_statement.multyselect])      
+
+
+                    elif self.page_statement.plot_type == "hist":
                         st.bar_chart(self.data.df[self.page_statement.selected_column])
                     elif self.page_statement.plot_type == "area":
                         st.area_chart(self.data.df[self.page_statement.selected_column])
