@@ -1,16 +1,29 @@
 import pandas as pd
 import numpy as np
-def read_df(filename):
-    df = pd.read_csv(filename)
+def read_df(filename, dfname):
+    if dfname.split(".")[-1] == "csv":
+        df = pd.read_csv(filename)
+    elif dfname.split(".")[-1] == "xlsx":
+        df = pd.read_excel(filename)
+    elif dfname.split(".")[-1] == "json":
+        df = pd.read_json(filename)
+    elif dfname.split(".")[-1] == "parquet":
+        df = pd.read_parquet(filename)
+    elif dfname.split(".")[-1] == "xls":
+        df = pd.read_excel(filename)
+    elif dfname.split(".")[-1] == "tsv":
+        df = pd.read_csv(filename, sep="\t")
+    else:
+        raise ValueError("File type not supported")
     return df
+
+
 
 def groupby(df, func, targer_column, other_columns, sort_type, sort_by):
     ascending = True
 
     if sort_type == ':.': 
-        ascending = False         
-
-    print(sort_by)
+        ascending = False    
 
     columns = other_columns
     if len(other_columns) == 1:
@@ -18,15 +31,26 @@ def groupby(df, func, targer_column, other_columns, sort_type, sort_by):
 
     match func:
         case "values":
-            return df.groupby(targer_column)[columns].value_counts() if sort_type == ":.:" else df.groupby(targer_column)[columns].value_counts().sort_values(ascending=ascending, by=sort_by)
+            return df.groupby(targer_column)[columns].value_counts(
+                ) if sort_type == ":.:" or len(other_columns) == 1 else df.groupby(targer_column)[columns].value_counts(
+                    ).sort_values(ascending=ascending, by=sort_by)
         case "groupby::mean":
-            return df.groupby(targer_column)[columns].mean() if sort_type == ":.:" else df.groupby(targer_column)[columns].mean().sort_values(ascending=ascending, by=sort_by)
+            return df.groupby(targer_column)[columns].mean(
+                ) if sort_type == ":.:" or len(other_columns) == 1 else df.groupby(targer_column)[columns].mean(
+                    ).sort_values(ascending=ascending, by=sort_by)
         case "values-normalize":
-            return df.groupby(targer_column)[columns].value_counts(normalize=True) if sort_type == ":.:" else df.groupby(targer_column)[columns].value_counts(normalize=True).sort_values(ascending=ascending, by=sort_by)
+            return df.groupby(targer_column)[columns].value_counts(normalize=True
+                                                                   ) if sort_type == ":.:" or len(other_columns) == 1 else df.groupby(
+                            targer_column)[columns].value_counts(
+                            normalize=True).sort_values(ascending=ascending, by=sort_by)
         case "groupby::std":
-            return df.groupby(targer_column)[columns].std() if sort_type == ":.:" else df.groupby(targer_column)[columns].std().sort_values(ascending=ascending, by=sort_by)
+            return df.groupby(targer_column)[columns].std(
+                ) if sort_type == ":.:" or len(other_columns) == 1 else df.groupby(targer_column)[columns].std(
+                    ).sort_values(ascending=ascending, by=sort_by)
         case "groupby::var":
-            return df.groupby(targer_column)[columns].var() if sort_type == ":.:" else df.groupby(targer_column)[columns].var().sort_values(ascending=ascending, by=sort_by)
+            return df.groupby(targer_column)[columns].var(
+                ) if sort_type == ":.:" or len(other_columns) == 1 else df.groupby(targer_column)[columns].var(
+                    ).sort_values(ascending=ascending, by=sort_by)
         case _:
             return "Select another agg function"
         

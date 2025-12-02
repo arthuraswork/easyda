@@ -43,6 +43,8 @@ class Page:
             self.page_statement.sort_type = ":.:"
         if 'sort_by' not in self.page_statement:
             self.page_statement.sort_by = None
+        if 'filename' not in self.data:
+            self.data.filename = None
 
     def __init_page_statement(self):
         self.conf_placeholder = st.empty()
@@ -215,9 +217,11 @@ class Page:
                 )
             )
 
-            print(self.page_statement.multyselect )
-
-            sorting_columns =  self.page_statement.multyselect if len(self.page_statement.multyselect) > 2 else ["Please", "select", "columns"] if len(self.page_statement.multyselect) == 0 else ["Please", "select", "one", "column", "more"]
+            sorting_columns =  self.page_statement.multyselect if len(self.page_statement.multyselect) > 1 else [
+                "Please", "select", "columns"
+                ] if len(self.page_statement.multyselect) == 0 else [
+                    "Please", "select", "one", "column", "more"
+                    ]
 
             self.page_statement.sort_by = st.select_slider(
                     "Select sorting by",
@@ -227,6 +231,15 @@ class Page:
                         )
                     )
                 )
+            
+            if self.data.df is not None:
+                st.download_button(
+                    label="Download data as CSV",
+                    data=self.data.df.to_csv(index=False).encode('utf-8'),
+                    file_name=f'easyda:{self.data.filename.split('.')[0]}.csv',
+                    type="secondary",
+                    icon=":material/download:"
+                )
 
 
 
@@ -235,7 +248,7 @@ class Page:
         with self.dataset_placeholder.container():
             df = st.file_uploader(
             label="Load dataset",
-            type="csv",
+            type=["csv","tsv","xlsx","json","parquet","xls"],
             help=f"max size: {MAX_FILE_SIZE}",
             key="dataset_uploader"
         )
@@ -243,13 +256,14 @@ class Page:
                 if df.size > MAX_FILE_SIZE:
                     st.error("File too big")
                 else:
-                    data = read_df(df)
+                    data = read_df(df, df.name)
                     if isinstance(data, pd.DataFrame):
                         self.data.columns = data.columns.tolist()
                         self.data.df = data
                         self.data.data = data
                         self.page_statement.is_loaded = 1
                         self.dataset_placeholder.empty()
+                        self.data.filename = df.name
                         st.rerun()
 
                     else:
